@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WMEW 99.9 FM - Mewgenics Radio</title>
+<style>
+  :root {
+    --bg: #121116;
+    --panel: #1d1b24;
+    --border: #332f40;
+    --accent: #e8b949;
+    --accent2: #d65a5a;
+    --text: #f0ece1;
+    --muted: #9e978e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--bg); color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.45;
+  }
+  .container {
+    max-width: 1080px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  h1 { margin: 0 0 4px 0; color: var(--accent); font-size: 1.5rem; letter-spacing: 0.5px; }
+  h2 { margin: 0 0 14px 0; font-size: 1.1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 16px; }
+  .now-playing-box {
+    background: #15131b; border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 4px;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;
+    background: #2e2a3b; color: var(--accent); margin-bottom: 6px;
+  }
+  .track-title { font-size: 1.2rem; font-weight: 600; margin: 4px 0; }
+  .track-file { font-size: 0.8rem; color: var(--muted); font-family: monospace; }
+  audio { width: 100%; margin: 12px 0; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  button {
+    background: var(--accent); color: #121116; border: none; border-radius: 6px;
+    padding: 8px 14px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  }
+  button.secondary { background: #2e2a3b; color: var(--text); border: 1px solid var(--border); }
+  button:hover { filter: brightness(1.08); }
+  .queue-list {
+    max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+  }
+  .queue-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; background: #16141d; border: 1px solid #262331;
+    border-radius: 6px; font-size: 0.86rem; cursor: pointer;
+  }
+  .queue-item.active { border-color: var(--accent); background: #26211c; }
+  .setting-row { margin-bottom: 12px; }
+  .setting-header { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 4px; }
+  .setting-val { font-family: monospace; color: var(--accent); font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .number-row { display: flex; gap: 12px; align-items: center; font-size: 0.88rem; margin-top: 8px; }
+  input[type=number], select {
+    background: #15131b; color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 8px; width: 70px;
+  }
+  select { width: auto; }
+  .status-msg { font-size: 0.85rem; color: #7cd67c; margin-left: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>WMEW 99.9 FM — 99.9 Lives</h1>
+    <div class="sub">Mewgenics Radio Mode Simulator &amp; Live Player</div>
+
+    <div class="now-playing-box">
+      <div class="badge" id="np-kind">READY</div>
+      <div class="track-title" id="np-label">Click "Start Radio" to begin broadcasting</div>
+      <div class="track-file" id="np-file">-</div>
+      <audio id="audio-player" controls preload="auto"></audio>
+      <div class="btn-row">
+        <button id="btn-start" onclick="startRadio()">Start Radio</button>
+        <button class="secondary" onclick="playNext()">Skip Track &raquo;</button>
+        <button class="secondary" onclick="regenerateQueue()">Regenerate Queue</button>
+      </div>
+    </div>
+
+    <h2>Upcoming Broadcast Queue</h2>
+    <div class="queue-list" id="queue-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Radio Probability Settings</h2>
+    <div id="sliders-container"></div>
+
+    <h2 style="margin-top:18px;">Behavior Settings</h2>
+    <div class="setting-row">
+      <label>Post-Song Roll Mode: </label>
+      <select id="beh-mode">
+        <option value="exclusive">Mutually Exclusive (Recommended)</option>
+        <option value="sequential">Sequential Independent Rolls</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <label><input type="checkbox" id="beh-start-cl"> Start broadcast with Call Letter</label>
+    </div>
+    <div class="setting-row">
+      <label><input type="checkbox" id="beh-bumper"> Play Commercial Break announcer bumper before ads</label>
+    </div>
+    <div class="setting-row">
+      <label><input type="checkbox" id="beh-outro-inter"> Allow Commercial/Segment/Transitional after Song Outro</label>
+    </div>
+    <div class="setting-row">
+      <label><input type="checkbox" id="beh-guarantee-call-seg"> Guarantee Call Letter after Segment (without Gamestart Intro)</label>
+    </div>
+    <div class="setting-row">
+      <label>Commercials per break: Min </label>
+      <input type="number" id="beh-cmin" min="1" max="10" value="1">
+      <label> Max </label>
+      <input type="number" id="beh-cmax" min="1" max="10" value="3">
+    </div>
+
+    <div class="btn-row" style="margin-top:16px; align-items:center;">
+      <button onclick="saveConfig()">Save &amp; Apply Settings</button>
+      <span class="status-msg" id="save-status"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLIDER_DEFS = [
+  { key: "intro_outro_chance", label: "Chance of Song Intro OR Outro playing (XOR)" },
+  { key: "intro_vs_outro_split", label: "Intro vs. Outro Split (when triggered, % Intro)" },
+  { key: "gamestart_intro_after_call_letter_chance", label: "Chance of Gamestart Intro after Call Letter" },
+  { key: "commercial_break_after_song_chance", label: "Chance of Commercial Break after Song" },
+  { key: "transitional_after_song_chance", label: "Chance of Transitional after Song" },
+  { key: "segment_after_song_chance", label: "Chance of Jimmy 'The Hammer' Valentine Segment after Song" },
+  { key: "call_letter_after_interstitial_chance", label: "Chance of Call Letter after Commercial/Transitional/Segment" },
+  { key: "call_letter_after_song_chance", label: "Chance of Call Letter directly after Song" }
+];
+
+let queue = [];
+let currentIndex = -1;
+let config = null;
+const player = document.getElementById("audio-player");
+
+player.addEventListener("ended", () => {
+  playNext();
+});
+
+async function init() {
+  const res = await fetch("/api/config");
+  config = await res.json();
+  renderSliders();
+  await fetchMoreTracks(3);
+}
+
+function renderSliders() {
+  const container = document.getElementById("sliders-container");
+  container.innerHTML = "";
+  for (const def of SLIDER_DEFS) {
+    const val = Math.round((config.probabilities[def.key] || 0) * 100);
+    const row = document.createElement("div");
+    row.className = "setting-row";
+    row.innerHTML = `
+      <div class="setting-header">
+        <span>${def.label}</span>
+        <span class="setting-val" id="val-${def.key}">${val}%</span>
+      </div>
+      <input type="range" min="0" max="100" value="${val}" id="rng-${def.key}"
+        oninput="document.getElementById('val-${def.key}').textContent = this.value + '%'">
+    `;
+    container.appendChild(row);
+  }
+  document.getElementById("beh-mode").value = config.behavior.post_song_mode || "exclusive";
+  document.getElementById("beh-start-cl").checked = !!config.behavior.start_with_call_letter;
+  document.getElementById("beh-bumper").checked = !!config.behavior.play_commercial_break_bumper;
+  document.getElementById("beh-outro-inter").checked = !!config.behavior.allow_interstitial_after_outro;
+  document.getElementById("beh-guarantee-call-seg").checked = !!config.behavior.guarantee_call_letter_after_segment_without_gamestart;
+  document.getElementById("beh-cmin").value = config.behavior.commercials_per_break_min || 1;
+  document.getElementById("beh-cmax").value = config.behavior.commercials_per_break_max || 3;
+}
+
+async function saveConfig() {
+  for (const def of SLIDER_DEFS) {
+    const v = parseInt(document.getElementById("rng-" + def.key).value, 10);
+    config.probabilities[def.key] = v / 100.0;
+  }
+  config.behavior.post_song_mode = document.getElementById("beh-mode").value;
+  config.behavior.start_with_call_letter = document.getElementById("beh-start-cl").checked;
+  config.behavior.play_commercial_break_bumper = document.getElementById("beh-bumper").checked;
+  config.behavior.allow_interstitial_after_outro = document.getElementById("beh-outro-inter").checked;
+  config.behavior.guarantee_call_letter_after_segment_without_gamestart = document.getElementById("beh-guarantee-call-seg").checked;
+  config.behavior.commercials_per_break_min = parseInt(document.getElementById("beh-cmin").value, 10) || 1;
+  config.behavior.commercials_per_break_max = parseInt(document.getElementById("beh-cmax").value, 10) || 3;
+
+  await fetch("/api/config", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config)
+  });
+  const st = document.getElementById("save-status");
+  st.textContent = "Saved to config.json!";
+  setTimeout(() => { st.textContent = ""; }, 2500);
+}
+
+async function fetchMoreTracks(cycles = 2) {
+  const res = await fetch(`/api/next?cycles=${cycles}`);
+  const data = await res.json();
+  queue.push(...data.tracks);
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById("queue-list");
+  list.innerHTML = "";
+  queue.forEach((t, idx) => {
+    if (idx < currentIndex) return;
+    const item = document.createElement("div");
+    item.className = "queue-item" + (idx === currentIndex ? " active" : "");
+    item.onclick = () => playIndex(idx);
+    item.innerHTML = `
+      <div>
+        <span class="badge" style="margin-right:6px;">${t.kind}</span>
+        <span>${t.label}</span>
+      </div>
+      <span style="color:var(--muted);font-size:0.75rem;">Cycle #${t.cycle_index}</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function playIndex(idx) {
+  if (idx >= queue.length - 3) {
+    await fetchMoreTracks(2);
+  }
+  currentIndex = idx;
+  const t = queue[currentIndex];
+  if (!t) return;
+  document.getElementById("np-kind").textContent = `${t.kind} (Cycle #${t.cycle_index})`;
+  document.getElementById("np-label").textContent = t.label;
+  document.getElementById("np-file").textContent = t.path;
+  player.src = "/audio?path=" + encodeURIComponent(t.path);
+  player.play().catch(e => console.warn(e));
+  renderQueue();
+}
+
+function startRadio() {
+  if (currentIndex < 0) playIndex(0);
+  else player.play();
+}
+
+function playNext() {
+  playIndex(currentIndex + 1);
+}
+
+async function regenerateQueue() {
+  queue = [];
+  currentIndex = -1;
+  await fetchMoreTracks(3);
+  playIndex(0);
+}
+
+init();
+</script>
+</body>
+</html>

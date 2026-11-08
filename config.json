@@ -1,0 +1,50 @@
+{
+  "_comment": "WMEW 99.9 FM (Mewgenics Radio) Configuration. All probabilities are between 0.0 (0%) and 1.0 (100%).",
+  "radio_dir": "radio",
+  "probabilities": {
+    "intro_outro_chance": 0.65,
+    "intro_vs_outro_split": 0.50,
+    "gamestart_intro_after_call_letter_chance": 0.60,
+    "commercial_break_after_song_chance": 0.12,
+    "transitional_after_song_chance": 0.15,
+    "segment_after_song_chance": 0.09,
+    "call_letter_after_interstitial_chance": 0,
+    "call_letter_after_song_chance": 0.10
+  },
+  "behavior": {
+    "post_song_mode": "exclusive",
+    "start_with_call_letter": true,
+    "force_gamestart_intro_on_boot": false,
+    "play_commercial_break_bumper": true,
+    "allow_interstitial_after_outro": true,
+    "guarantee_call_letter_after_segment_without_gamestart": true,
+    "commercials_per_break_min": 1,
+    "commercials_per_break_max": 1
+  },
+  "anti_repeat": {
+    "song_history_size": 25,
+    "commercial_history_size": 20,
+    "transitional_history_size": 15,
+    "segment_history_size": 10,
+    "gamestart_history_size": 8,
+    "call_letter_history_size": 2
+  },
+  "stream": {
+    "sample_rate": 44100,
+    "channels": 2,
+    "audio_bitrate": "192k",
+    "silence_between_tracks_ms": 1000,
+    "thread_queue_size": 1024,
+    "video_codec": "libx264",
+    "video_preset": "ultrafast",
+    "video_tune": "stillimage",
+    "video_width": 256,
+    "video_height": 144,
+    "video_bitrate": "56k",
+    "video_maxrate": "70k",
+    "video_bufsize": "140k",
+    "video_pix_fmt": "yuv420p",
+    "video_fps": 2,
+    "video_gop_size": 4
+  }
+}
