@@ -1,0 +1,21 @@
+[Unit]
+Description=WMEW Radio 24/7 YouTube Livestream
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/mewgenics_audio
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 wmew_radio.py \
+    --stream "rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY" \
+    --loop-visual still_image.jpg
+Restart=always
+RestartSec=5s
+# Change KillMode to control-group:
+KillMode=control-group
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=multi-user.target
