@@ -1,3 +1,5 @@
+# this is for a default configuration of Azure, modify it accordingly
+
 [Unit]
 Description=WMEW Radio 24/7 YouTube Livestream
 After=network-online.target

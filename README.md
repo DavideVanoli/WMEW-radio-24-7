@@ -50,49 +50,7 @@ python wmew_radio.py --stream "rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY" 
 
 ## Configuration File (`config.json`)
 
-[`config.json`](config.json) defines the default probabilities, broadcast flow, anti-repeat history buffers, and stream encoding settings.
-
-### Full Example
-
-```json
-{
-  "_comment": "WMEW 99.9 FM (Mewgenics Radio) Configuration. All probabilities are between 0.0 (0%) and 1.0 (100%).",
-  "radio_dir": "radio",
-  "probabilities": {
-    "intro_outro_chance": 0.70,
-    "intro_vs_outro_split": 0.50,
-    "gamestart_intro_after_call_letter_chance": 0.15,
-    "commercial_break_after_song_chance": 0.25,
-    "transitional_after_song_chance": 0.20,
-    "segment_after_song_chance": 0.10,
-    "call_letter_after_interstitial_chance": 0.50,
-    "call_letter_after_song_chance": 0.15
-  },
-  "behavior": {
-    "post_song_mode": "exclusive",
-    "start_with_call_letter": true,
-    "force_gamestart_intro_on_boot": false,
-    "play_commercial_break_bumper": true,
-    "allow_interstitial_after_outro": false,
-    "commercials_per_break_min": 1,
-    "commercials_per_break_max": 3
-  },
-  "anti_repeat": {
-    "song_history_size": 25,
-    "commercial_history_size": 20,
-    "transitional_history_size": 15,
-    "segment_history_size": 10,
-    "gamestart_history_size": 8,
-    "call_letter_history_size": 2
-  },
-  "stream": {
-    "sample_rate": 44100,
-    "channels": 2,
-    "audio_bitrate": "192k",
-    "silence_between_tracks_ms": 150
-  }
-}
-```
+[`config.json`](config.json) defines the broadcast probabilities, playback behavior, anti-repeat history buffer sizes, and stream encoding settings. Modify this file directly to customize your station, or adjust values dynamically through the `--web` dashboard.
 
 ---
 
@@ -168,9 +126,20 @@ Controls audio and video encoding parameters for 24/7 streaming via FFmpeg.
 | `video_codec` | `string` | `"libx264"` | Video encoder codec. |
 | `video_preset` | `string` | `"ultrafast"` | x264 CPU encoding preset (`"ultrafast"`, `"superfast"`, `"veryfast"`). |
 | `video_tune` | `string` | `"stillimage"` | x264 tuning profile (`"stillimage"`, `"zerolatency"`, or `""`). |
+| `video_width` | `integer` | `854` | Video frame width in pixels (e.g. `854` for 480p, `256` for low bandwidth). |
+| `video_height` | `integer` | `480` | Video frame height in pixels (e.g. `480` for 480p, `144` for low bandwidth). |
 | `video_bitrate` | `string` | `"800k"` | Target video bitrate. |
 | `video_maxrate` | `string` | `"1000k"` | Maximum video bitrate peak. |
 | `video_bufsize` | `string` | `"2000k"` | Rate control buffer size. |
 | `video_pix_fmt` | `string` | `"yuv420p"` | Pixel format expected by RTMP ingests (YouTube/Twitch). |
 | `video_fps` | `integer` | `2` | Video output framerate (frames per second). |
 | `video_gop_size` | `integer` | `4` | Keyframe distance (GOP). At 2 fps, GOP 4 = a keyframe every 2 seconds. |
+
+---
+
+## 24/7 Production Deployment
+
+For continuous unattended livestreaming on Linux servers (e.g., Ubuntu on Azure / AWS / VPS):
+* Refer to [`UBUNTU_LIVESTREAM_GUIDE.md`](UBUNTU_LIVESTREAM_GUIDE.md) for step-by-step instructions on setting up FFmpeg, Python, YouTube RTMP ingestion, and headless execution.
+* Use the provided [`wmew_radio.service`](wmew_radio.service) systemd unit file to automatically manage, start, and auto-restart the broadcast service on boot.
+
